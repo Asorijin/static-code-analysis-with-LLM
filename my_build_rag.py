@@ -5,7 +5,6 @@ from prompts import SYSTEM_PROMPT_CCI, USER_PROMPT_CCI
 import os
 import pandas as pd
 from tqdm import tqdm
-from utils import process_patch
 import dashscope
 from openai import OpenAI
 import requests
@@ -65,7 +64,6 @@ def inference_llm(system_prompt, user_prompt, cache_dir=None):
             ]
         )
         content = response.choices[0].message.content
-        print(content)
         return content
     except Exception as ex:
         print(ex)
@@ -84,9 +82,7 @@ def process(row):
     global now_num
 
     patch = row['patch']
-    # TODO：修改正则式
-    processed_patch = process_patch(patch)
-    cci = generate_cci(processed_patch)
+    cci = generate_cci(patch)
     now_num += 1
 
     print(now_num)

@@ -1,10 +1,9 @@
-from prompts import SYSTEM_PROMPT_CAVFD, SYSTEM_PROMPT_CCI, SYSTEM_PROMPT_DA, USER_PROMPT_CAVFD, USER_PROMPT_CCI
+from prompts import SYSTEM_PROMPT_CAVFD, SYSTEM_PROMPT_CCI,USER_PROMPT_CAVFD, USER_PROMPT_CCI
 import chromadb
 import os
 import pandas as pd
 from openai import OpenAI
 from tqdm import tqdm
-from utils import process_patch
 import dashscope
 from http import HTTPStatus
 # all models use openai api
@@ -46,6 +45,7 @@ def generate_cci(patch):
     system_prompt = SYSTEM_PROMPT_CCI
     cci = inference_llm(system_prompt, user_prompt)
     return cci
+
 #生成最终cavfd信息
 def generate_cavfd(patch, cci, history_cci, history_cve_description):
     user_prompt = USER_PROMPT_CAVFD.substitute(patch_content=patch, three_aspect_content=cci,
@@ -115,9 +115,7 @@ def retrieve_from_rag(cci, lang="Java"):
 #进入处理输入流程
 def process(row):
     patch = row['patch']
-    # TODO：需要更改正则规则
-    processed_patch = process_patch(patch)
-    cci = generate_cci(processed_patch)
+    cci = generate_cci(patch)
     # lang = row['lang']
     history_cci, history_cve_description = retrieve_from_rag(cci)
     cavfd = generate_cavfd(patch, cci, history_cci, history_cve_description)
