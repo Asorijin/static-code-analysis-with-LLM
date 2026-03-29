@@ -97,7 +97,9 @@ def query_collection_lang(collection_name, query_embeddings, lang="Java"):
         query_embeddings=query_embeddings, n_results=1, where={"lang": lang}
     )
     return result
+
 #将输入CCI向量化，与数据库比对
+# TODO:如果修改检测语言，这里需要指定参数或修改默认参数
 def retrieve_from_rag(cci, lang="Java"):
     collection_name = 'three_aspect_summary_collection_gte-Qwen2-7B-instruct'
     cci_embedding = get_embeddings_qwen([cci])
