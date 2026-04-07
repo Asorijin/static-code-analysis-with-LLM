@@ -1,0 +1,16 @@
+[project]
+name = "static-code-analysis-with-llm"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "chromadb>=1.5.6",
+    "dashscope>=1.25.15",
+    "fastparquet>=2026.3.0",
+    "openai>=2.30.0",
+    "pandas>=3.0.2",
+    "pyarrow>=23.0.1",
+    "requests>=2.33.1",
+    "tqdm>=4.67.3",
+]

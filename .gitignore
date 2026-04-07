@@ -208,3 +208,10 @@ __marimo__/
 
 chroma_db/
 leaks/
+
+#idea
+.idea/
+
+# Claude
+.claude/
+CLAUDE.md
