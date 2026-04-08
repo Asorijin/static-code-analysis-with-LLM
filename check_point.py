@@ -1,8 +1,9 @@
 import pandas as pd
 import math
+from config import Config
 
-df = pd.read_csv('fin.csv')
-df_xlsx = pd.read_excel('./leak.xlsx', engine='openpyxl')
+df = pd.read_csv(Config.OUTPUT_CSV)
+df_xlsx = pd.read_excel(Config.GROUND_TRUTH_XLSX, engine='openpyxl')
 
 TP = 0.0
 FP = 0.0
