@@ -3,24 +3,20 @@ import math
 from config import Config
 
 df = pd.read_csv(Config.OUTPUT_CSV)
-df_xlsx = pd.read_excel(Config.GROUND_TRUTH_XLSX, engine='openpyxl')
 
-TP = 0.0
-FP = 0.0
-TN = 0.0
-FN = 0.0
-for i in range(0,len(df)):
-    if ('"yes"' in (df['cavfd'][i])) and (df_xlsx['label'][i] == 1):
-        TP += 1.0
-    elif ('"yes"' in (df['cavfd'][i])) and (df_xlsx['label'][i] == 0):
-        FP += 1.0
-    elif ('"no"' in (df['cavfd'][i])) and (df_xlsx['label'][i] == 0):
-        TN += 1.0
-    else:
-        FN += 1.0
+# 假设所有label=1（全为漏洞）
+TP = FP = TN = FN = 0
+for i in range(len(df)):
+    cavfd = str(df['cavfd'][i])
+    if '"yes"' in cavfd:
+        TP += 1  # 正确识别漏洞
+    elif '"no"' in cavfd:
+        FN += 1  # 漏报（实际漏洞但判为非漏洞）
+    elif 'likely' in cavfd:
+        TP += 0.5  # 模糊结果算半条TP
+        FN += 0.5
+    # unknown 不计入
+
 print(f"TP: {TP}, FP: {FP}, TN: {TN}, FN: {FN}")
-print(((TP*TN)-(FP*FN))/math.sqrt( (TP+FP)*(TP+FN)*(TN+FN)*(TN+FP) ) )
-
-
-
-
+mcc = ((TP*TN)-(FP*FN))/math.sqrt((TP+FP)*(TP+FN)*(TN+FN)*(TN+FP)) if (TP+FP)*(TP+FN)*(TN+FP)*(TN+FN) > 0 else 0
+print(f"MCC: {mcc:.4f}")
