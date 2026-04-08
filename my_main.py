@@ -20,11 +20,11 @@ def generate_cavfd(patch, cci, history_cci, history_cve_description):
 
 
 # 在向量数据库中查询相似漏洞
-def query_collection_lang(collection_name, query_embeddings, lang="Java"):
+def query_collection_lang(collection_name, query_embeddings):
     client = get_chroma_client()
     collection = client.get_collection(collection_name)
     result = collection.query(
-        query_embeddings=query_embeddings, n_results=1, where={"lang": lang}
+        query_embeddings=query_embeddings, n_results=1
     )
     return result
 
@@ -34,11 +34,11 @@ def retrieve_from_rag(cci, lang="Java"):
     collection_name = Config.COLLECTION_NAME
     cci_embedding = get_embeddings_qwen([cci])
     cci_embedding = cci_embedding[0]
-    exp_result = query_collection_lang(collection_name, cci_embedding, lang)
+    exp_result = query_collection_lang(collection_name, cci_embedding)
     # 三角度分析
     retrieved_3aspect = exp_result["documents"][0][0]
-    # 检索CVE描述
-    retrieved_cve_description = exp_result["metadatas"][0][0]["cve_info"]
+    # 检索CVE描述（使用vuln_id作为回退，因为cve_info未存储）
+    retrieved_cve_description = exp_result["metadatas"][0][0].get("cve_info", exp_result["metadatas"][0][0].get("vuln_id", ""))
     return retrieved_3aspect, retrieved_cve_description
 
 

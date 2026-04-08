@@ -9,7 +9,7 @@ def get_openai_client():
     """获取OpenAI客户端（兼容DashScope）"""
     from openai import OpenAI
     return OpenAI(
-        api_key=Config.OPENAI_API_KEY,
+        api_key=Config.DASHSCOPE_API_KEY,
         base_url=Config.LLM_BASE_URL
     )
 
@@ -74,7 +74,7 @@ def inference_llm(system_prompt, user_prompt, cache_dir=None):
             with open(cache_dir, "r") as f:
                 return f.read()
     try:
-        get_openai_response_content(system_prompt, user_prompt)
+        return get_openai_response_content(system_prompt, user_prompt)
     except Exception as ex:
         print(ex)
         return None

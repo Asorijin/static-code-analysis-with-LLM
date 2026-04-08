@@ -7,36 +7,30 @@ USER_PROMPT_CAVFD = Template(
 1. **Patch Content:**
 \"\"\"
 ${patch_content}
-\"\"\" 
-
-2. **Related Issue Report / Pull Request Summary:**
-\"\"\"
-${IRPR_content}
 \"\"\"
 
-3. **Three Aspect Analysis of the Patch:**
+2. **Three Aspect Analysis of the Patch:**
 \"\"\"
 ${three_aspect_content}
 \"\"\"
 
-4. **Similar Historical Vulnerability Fix Information:**
+3. **Similar Historical Vulnerability Fix Information:**
 \"\"\"
 ${history_vuln_content}
 \"\"\"
 
-5. **Three Aspect Analysis of the Historical Vulnerability Fix:**
+4. **Three Aspect Analysis of the Historical Vulnerability Fix:**
 \"\"\"
 ${history_three_aspect_content}
 \"\"\"
 
 **Task:**
 
-1. **Comparison:** 
+1. **Comparison:**
 - Carefully compare the current patch with the historical vulnerability fix to avoid bias.
 - Ensure that you consider the similarities and differences highlighted in the three aspect analyses.
 
 2. **Analysis:**
-- Use the information from the Related Issue Report / Pull Request Summary to understand the context and motivation behind the patch.
 - Determine whether the current patch is intended to fix a vulnerability. You must provide evidence if you think its a vulnerability fix.
 
 Your output should follow below syntax:
