@@ -121,75 +121,84 @@ Here is an example of the desired format:
 # ============================================================
 # 原有漏洞修复识别 prompts
 # ============================================================
-# SYSTEM_PROMPT_CAVFD = """You are a helpful software developer assistant specializing in vulnerability detection to help other developers understand characteristics of software patches and discover potential vulnerabilities."""
-# USER_PROMPT_CAVFD = Template(
-#     """You are given the following details for analysis:
-# 1. **Patch Content:**
-# \"\"\"
-# ${patch_content}
-# \"\"\"
-#
-# 2. **Three Aspect Analysis of the Patch:**
-# \"\"\"
-# ${three_aspect_content}
-# \"\"\"
-#
-# 3. **Similar Historical Vulnerability Fix Information:**
-# \"\"\"
-# ${history_vuln_content}
-# \"\"\"
-#
-# 4. **Three Aspect Analysis of the Historical Vulnerability Fix:**
-# \"\"\"
-# ${history_three_aspect_content}
-# \"\"\"
-#
-# **Task:**
-#
-# 1. **Comparison:**
-# - Carefully compare the current patch with the historical vulnerability fix to avoid bias.
-# - Ensure that you consider the similarities and differences highlighted in the three aspect analyses.
-#
-# 2. **Analysis:**
-# - Determine whether the current patch is intended to fix a vulnerability. You must provide evidence if you think its a vulnerability fix.
-#
-# Your output should follow below syntax:
-# {
-#  "analysis": "<Detailed analysis of whether the patch is to fix a vulnerability>",
-#  "vulnerability_fix": "<yes or no>"
-# }
-# """)
-#
-# SYSTEM_PROMPT_CCI = """You are a helpful software developer assistant specializing in software development lifecycle to help other developers understand characteristics of software patches."""
-# USER_PROMPT_CCI = Template(
-#     """You are given the following software patch:
-# \"\"\"
-# ${patch_content}
-# \"\"\"
-#
-# Provide an analysis describing the following characteristics:
-# 1. Code Change Summary
-# 2. Purpose of the Change
-# 3. Implications of the Change
-#
-# Provide the analysis in bullet point format for each characteristic. Each bullet point should start with a key point and then briefly describe a main idea or fact from the text. Ensure each point is concise and captures the essence of the main idea it's summarizing.
-#
-# Here is an example of the desired format:
-# \"\"\"
-# 1. Code Change Summary
-# - [Key Point]: <description>
-# - [Optional Key Point]: <description>
-# - [Optional Key Point]: <description>
-#
-# 2. Purpose of the Change
-# - [Key Point]: <description>
-# - [Optional Key Point]: <description>
-# - [Optional Key Point]: <description>
-#
-# 3. Implications of the Change
-# - [Key Point]: <description>
-# - [Optional Key Point]: <description>
-# - [Optional Key Point]: <description>
-# \"\"\"
-# """
-# )
+SYSTEM_PROMPT_CAVFD = """You are a helpful software developer assistant specializing in vulnerability detection to help other developers understand characteristics of software patches and discover potential vulnerabilities."""
+USER_PROMPT_CAVFD = Template(
+    """You are given the following details for analysis:
+1. **Patch Content:**
+\"\"\"
+${patch_content}
+\"\"\"
+
+2. **Three Aspect Analysis of the Patch:**
+\"\"\"
+${three_aspect_content}
+\"\"\"
+
+3. **Similar Historical Vulnerability Fix Information:**
+\"\"\"
+${history_vuln_content}
+\"\"\"
+
+4. **Three Aspect Analysis of the Historical Vulnerability Fix:**
+\"\"\"
+${history_three_aspect_content}
+\"\"\"
+
+**Task:**
+
+1. **Comparison:**
+- Carefully compare the current patch with the historical vulnerability fix to avoid bias.
+- Ensure that you consider the similarities and differences highlighted in the three aspect analyses.
+
+2. **Analysis:**
+- Determine whether the current patch is intended to fix a vulnerability. You must provide evidence if you think its a vulnerability fix.
+
+Your output should follow below syntax:
+{
+ "analysis": "<Detailed analysis of whether the patch is to fix a vulnerability>",
+ "vulnerability_fix": "<yes or no>"
+}
+""")
+
+
+# ============================================================
+# 用于 generate_cavfd_code 的 prompts（直接分析代码）
+# ============================================================
+SYSTEM_PROMPT_CAVFD_CODE = """You are a helpful software developer assistant specializing in vulnerability detection to help other developers understand characteristics of source code and discover potential vulnerabilities."""
+USER_PROMPT_CAVFD_CODE = Template(
+    """You are given the following details for analysis:
+1. **Code Content:**
+\"\"\"
+${patch_content}
+\"\"\"
+
+2. **Three Aspect Analysis of the Code:**
+\"\"\"
+${three_aspect_content}
+\"\"\"
+
+3. **Similar Historical Vulnerability Fix Information:**
+\"\"\"
+${history_vuln_content}
+\"\"\"
+
+4. **Three Aspect Analysis of the Historical Vulnerability Fix:**
+\"\"\"
+${history_three_aspect_content}
+\"\"\"
+
+**Task:**
+
+1. **Comparison:**
+- Carefully compare the current code with the historical vulnerability fix to avoid bias.
+- Ensure that you consider the similarities and differences highlighted in the three aspect analyses.
+
+2. **Analysis:**
+- Determine whether the current code contains or fixes a vulnerability. You must provide evidence if you think it is related to a vulnerability.
+
+Your output should follow below syntax:
+{
+ "analysis": "<Detailed analysis of whether the code is or fixes a vulnerability>",
+ "vulnerability_fix": "<yes or no>"
+}
+""")

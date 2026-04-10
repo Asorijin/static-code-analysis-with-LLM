@@ -97,6 +97,30 @@ def generate_cci_code(code_content):
     return cci
 
 
+# 静态代码分析
+def generate_sa(code_content, rag_context=""):
+    from prompts import SYSTEM_PROMPT_SA, USER_PROMPT_SA
+    user_prompt = USER_PROMPT_SA.substitute(
+        code_content=code_content,
+        rag_context=rag_context
+    )
+    system_prompt = SYSTEM_PROMPT_SA
+    result = inference_llm(system_prompt, user_prompt)
+    return result
+
+
+# 针对代码（而非patch）的CAVFD分析
+def generate_cavfd_code(code, cci, history_cci, history_cve_description):
+    from prompts import SYSTEM_PROMPT_CAVFD_CODE, USER_PROMPT_CAVFD_CODE
+    user_prompt = USER_PROMPT_CAVFD_CODE.substitute(
+        patch_content=code,
+        three_aspect_content=cci,
+        history_three_aspect_content=history_cci,
+        history_vuln_content=history_cve_description
+    )
+    return inference_llm(SYSTEM_PROMPT_CAVFD_CODE, user_prompt)
+
+
 # 在向量数据库中查询相似漏洞
 def query_collection_lang(collection_name, query_embeddings):
     client = get_chroma_client()

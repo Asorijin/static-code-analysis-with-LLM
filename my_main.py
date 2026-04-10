@@ -1,7 +1,8 @@
 from prompts import SYSTEM_PROMPT_CAVFD, USER_PROMPT_CAVFD
 import pandas as pd
-from utils import init_dashscope, inference_llm, get_embeddings_qwen, get_chroma_client, generate_cci, generate_cci_code
+from utils import init_dashscope, inference_llm, get_embeddings_qwen, get_chroma_client, generate_cci, generate_cci_code, generate_sa, generate_cavfd_code
 from config import Config
+import json
 
 
 def extract_code_from_patch(patch):
@@ -72,15 +73,32 @@ def process_code_direct(row):
     code = extract_code_from_patch(patch)
     cci = generate_cci_code(code)
     history_cci, history_cve_description = retrieve_from_rag(cci)
-    cavfd = generate_cavfd(patch, cci, history_cci, history_cve_description)
-    print(cavfd)
-    return cavfd
+
+    # 静态分析 (SA)
+    rag_context = f"历史漏洞模式:\n{history_cve_description}\n\nCCI分析:\n{history_cci}"
+    sa_result = generate_sa(code, rag_context)
+
+    # 漏洞修复判断 (CAVFD)
+    cavfd_result = generate_cavfd_code(code, cci, history_cci, history_cve_description)
+
+    # 合并输出
+    try:
+        combined = {
+            "static_analysis": json.loads(sa_result) if sa_result else None,
+            "vulnerability_fix": json.loads(cavfd_result) if cavfd_result else None
+        }
+        result = json.dumps(combined, indent=2, ensure_ascii=False)
+    except (json.JSONDecodeError, AttributeError):
+        result = f"SA Result:\n{sa_result}\n\nCAVFD Result:\n{cavfd_result}"
+
+    print(result)
+    return result
 
 
 dataset_dir = Config.TEST_DATASET
 
 df = pd.read_parquet(dataset_dir)
 df['patch'] = df['patch'].fillna('').astype(str)
-df['cavfd'] = df.apply(process, axis=1)
+df['cavfd'] = df.apply(process_code_direct, axis=1)
 
 df.to_csv(Config.OUTPUT_CSV)

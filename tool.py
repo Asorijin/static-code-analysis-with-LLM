@@ -1,12 +1,12 @@
 """
 tool.py - 交互式静态漏洞分析工具
 支持直接输入代码或从文件读取，基于 RAG 向量检索辅助分析
+静态检测 + 漏洞修复判断
 """
 
-from utils import init_dashscope, generate_cci, retrieve_from_rag, inference_llm
-from prompts import SYSTEM_PROMPT_SA, USER_PROMPT_SA
-from string import Template
+from utils import init_dashscope, generate_cci_code, retrieve_from_rag, generate_sa, generate_cavfd_code
 import os
+import json
 
 init_dashscope()
 
@@ -18,30 +18,38 @@ QUIT_CMD = "/quit"
 
 
 def static_analyze(code):
-    """对代码进行静态漏洞分析，结合 RAG 检索结果"""
-    # 1. 生成代码变更意图
+    """对代码进行静态漏洞分析 + 漏洞修复判断，结合 RAG 检索结果"""
+    # 1. CCI 分析（针对代码）
     print("正在生成代码分析...")
-    cci = generate_cci(code)
+    cci = generate_cci_code(code)
     if not cci:
         print("错误: 无法生成代码分析，API调用失败")
         return None
     print(f"代码分析完成: {cci[:100]}...")
 
-    # 2. 检索相似漏洞案例
+    # 2. RAG 检索
     print("正在检索相似漏洞案例...")
-    rag_context, vuln_description = retrieve_from_rag(cci)
-    print(f"检索到 {vuln_description}")
+    history_cci, history_cve_description = retrieve_from_rag(cci)
+    print(f"检索到 {history_cve_description}")
 
-    # 3. 构造 prompt
-    user_prompt = USER_PROMPT_SA.substitute(
-        code_content=code,
-        rag_context=rag_context
-    )
+    # 3. 静态分析 (SA)
+    print("正在进行静态分析...")
+    rag_context = f"历史漏洞模式:\n{history_cve_description}\n\nCCI分析:\n{history_cci}"
+    sa_result = generate_sa(code, rag_context)
 
-    # 4. LLM 分析
-    print("正在进行漏洞分析...")
-    result = inference_llm(SYSTEM_PROMPT_SA, user_prompt)
-    return result
+    # 4. 漏洞修复判断 (CAVFD)
+    print("正在进行漏洞修复判断...")
+    cavfd_result = generate_cavfd_code(code, cci, history_cci, history_cve_description)
+
+    # 5. 合并输出
+    try:
+        combined = {
+            "static_analysis": json.loads(sa_result) if sa_result else None,
+            "vulnerability_fix": json.loads(cavfd_result) if cavfd_result else None
+        }
+        return json.dumps(combined, indent=2, ensure_ascii=False)
+    except (json.JSONDecodeError, AttributeError):
+        return f"SA Result:\n{sa_result}\n\nCAVFD Result:\n{cavfd_result}"
 
 
 def show_help():
