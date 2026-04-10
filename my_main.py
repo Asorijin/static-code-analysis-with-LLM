@@ -1,7 +1,21 @@
 from prompts import SYSTEM_PROMPT_CAVFD, USER_PROMPT_CAVFD
 import pandas as pd
-from utils import init_dashscope, inference_llm, get_embeddings_qwen, get_chroma_client, generate_cci
+from utils import init_dashscope, inference_llm, get_embeddings_qwen, get_chroma_client, generate_cci, generate_cci_code
 from config import Config
+
+
+def extract_code_from_patch(patch):
+    """从diff格式的patch中提取代码部分（+/-行和上下文代码）"""
+    lines = patch.split('\n')
+    code_lines = []
+    for line in lines:
+        # 跳过 diff 元数据行（---, +++, @@, File:, Class:, Method:, Signature:）
+        if line.startswith('---') or line.startswith('+++') or line.startswith('@@') \
+                or line.startswith('File:') or line.startswith('Class:') \
+                or line.startswith('Method:') or line.startswith('Signature:'):
+            continue
+        code_lines.append(line)
+    return '\n'.join(code_lines)
 
 # 初始化DashScope API
 init_dashscope()
@@ -42,10 +56,21 @@ def retrieve_from_rag(cci, lang="Java"):
     return retrieved_3aspect, retrieved_cve_description
 
 
-# 进入处理输入流程
+# 进入处理输入流程（基于diff/patch的CCI分析）
 def process(row):
     patch = row['patch']
     cci = generate_cci(patch)
+    history_cci, history_cve_description = retrieve_from_rag(cci)
+    cavfd = generate_cavfd(patch, cci, history_cci, history_cve_description)
+    print(cavfd)
+    return cavfd
+
+
+# 进入直接分析代码的流程（从diff中提取代码后分析）
+def process_code_direct(row):
+    patch = row['patch']
+    code = extract_code_from_patch(patch)
+    cci = generate_cci_code(code)
     history_cci, history_cve_description = retrieve_from_rag(cci)
     cavfd = generate_cavfd(patch, cci, history_cci, history_cve_description)
     print(cavfd)

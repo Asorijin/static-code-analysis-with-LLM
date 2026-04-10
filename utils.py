@@ -88,6 +88,15 @@ def generate_cci(patch):
     return cci
 
 
+# 根据代码内容（而非diff）生成CCI信息
+def generate_cci_code(code_content):
+    from prompts import SYSTEM_PROMPT_CCI_CODE, USER_PROMPT_CCI_CODE
+    user_prompt = USER_PROMPT_CCI_CODE.substitute(code_content=code_content)
+    system_prompt = SYSTEM_PROMPT_CCI_CODE
+    cci = inference_llm(system_prompt, user_prompt)
+    return cci
+
+
 # 在向量数据库中查询相似漏洞
 def query_collection_lang(collection_name, query_embeddings):
     client = get_chroma_client()

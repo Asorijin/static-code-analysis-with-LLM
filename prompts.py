@@ -49,12 +49,48 @@ Perform a comprehensive static analysis covering:
 
 
 # ============================================================
-# 用于 generate_cci 的 prompts
+# 用于 generate_cci 的 prompts（分析 diff/patch）
 # ============================================================
 SYSTEM_PROMPT_CCI = """You are a helpful software developer assistant specializing in software development lifecycle to help other developers understand characteristics of software patches."""
 USER_PROMPT_CCI = Template(
     """You are given the following software patch:
 ${patch_content}
+
+Provide an analysis describing the following characteristics:
+1. Code Change Summary
+2. Purpose of the Change
+3. Implications of the Change
+
+When analyzing the patch, focus on the ChangeCode (the actual code that was changed) rather than just the diff metadata. Identify what code was added, removed, or modified and explain its purpose and impact.
+
+Provide the analysis in bullet point format for each characteristic. Each bullet point should start with a key point and then briefly describe a main idea or fact from the text. Ensure each point is concise and captures the essence of the main idea it's summarizing.
+
+Here is an example of the desired format:
+1. Code Change Summary
+- [Key Point]: <description>
+- [Optional Key Point]: <description>
+- [Optional Key Point]: <description>
+
+2. Purpose of the Change
+- [Key Point]: <description>
+- [Optional Key Point]: <description>
+- [Optional Key Point]: <description>
+
+3. Implications of the Change
+- [Key Point]: <description>
+- [Optional Key Point]: <description>
+- [Optional Key Point]: <description>
+"""
+)
+
+
+# ============================================================
+# 用于 generate_cci_code 的 prompts（直接分析代码）
+# ============================================================
+SYSTEM_PROMPT_CCI_CODE = """You are a helpful software developer assistant specializing in software development lifecycle to help other developers understand characteristics of source code."""
+USER_PROMPT_CCI_CODE = Template(
+    """You are given the following source code for analysis:
+${code_content}
 
 Provide an analysis describing the following characteristics:
 1. Code Change Summary
