@@ -1,48 +1,44 @@
 """
-tool.py - 交互式漏洞检测工具
-支持直接输入代码或从文件读取
+tool.py - 交互式静态漏洞分析工具
+支持直接输入代码或从文件读取，基于 RAG 向量检索辅助分析
 """
 
 from utils import init_dashscope, generate_cci, retrieve_from_rag, inference_llm
-from prompts import SYSTEM_PROMPT_CAVFD, USER_PROMPT_CAVFD
+from prompts import SYSTEM_PROMPT_SA, USER_PROMPT_SA
 from string import Template
 import os
 
 init_dashscope()
 
-# 分隔符，用于分隔多个文件路径
+# 命令常量
 FILE_SEPARATOR = ","
-BACK_CMD = "/back"  # 返回主菜单命令
-HELP_CMD = "/help"  # 显示帮助
-QUIT_CMD = "/quit"  # 退出程序
+BACK_CMD = "/back"
+HELP_CMD = "/help"
+QUIT_CMD = "/quit"
 
 
-def generate_cavfd(patch, cci, history_cci, history_cve_description):
-    """复现 my_main.py 中的逻辑"""
-    user_prompt = Template(str(USER_PROMPT_CAVFD)).substitute(
-        patch_content=patch,
-        three_aspect_content=cci,
-        history_three_aspect_content=history_cci,
-        history_vuln_content=history_cve_description
+def static_analyze(code):
+    """对代码进行静态漏洞分析，结合 RAG 检索结果"""
+    # 1. 生成代码变更意图
+    print("正在生成代码分析...")
+    cci = generate_cci(code)
+    print(f"代码分析完成: {cci[:100]}...")
+
+    # 2. 检索相似漏洞案例
+    print("正在检索相似漏洞案例...")
+    rag_context, vuln_description = retrieve_from_rag(cci)
+    print(f"检索到 {vuln_description}")
+
+    # 3. 构造 prompt
+    user_prompt = Template(str(USER_PROMPT_SA)).substitute(
+        code_content=code,
+        rag_context=rag_context
     )
-    system_prompt = SYSTEM_PROMPT_CAVFD
-    cavfd = inference_llm(system_prompt, user_prompt)
-    return cavfd
 
-
-def process_single_patch(patch):
-    """处理单个 patch"""
-    print("\n正在生成CCI分析...")
-    cci = generate_cci(patch)
-    print(f"CCI完成: {cci[:100]}...")
-
-    print("正在检索历史漏洞...")
-    history_cci, history_cve_description = retrieve_from_rag(cci)
-    print(f"检索到历史漏洞: {history_cve_description}")
-
-    print("正在进行漏洞判断...")
-    cavfd = generate_cavfd(patch, cci, history_cci, history_cve_description)
-    return cavfd
+    # 4. LLM 分析
+    print("正在进行漏洞分析...")
+    result = inference_llm(SYSTEM_PROMPT_SA, user_prompt)
+    return result
 
 
 def show_help():
@@ -61,9 +57,9 @@ def show_help():
 
 
 def select_input_mode():
-    """让用户选择输入模式，支持随时返回"""
+    """让用户选择输入模式"""
     print("\n" + "=" * 50)
-    print("漏洞检测工具")
+    print("静态漏洞分析工具")
     print("=" * 50)
     print("1. 直接输入代码")
     print("2. 从文件读取")
@@ -74,7 +70,7 @@ def select_input_mode():
 
 def input_code_mode():
     """直接输入代码模式"""
-    print("\n请输入代码，输入完成后按 Ctrl+D（Linux/Mac）或 Ctrl+Z+回车（Windows）结束输入")
+    print("\n请输入代码，输入完成后按Ctrl+Z+回车(Windows)结束输入")
     print("-" * 40)
     lines = []
     try:
@@ -87,8 +83,8 @@ def input_code_mode():
     code = "\n".join(lines)
     if code.strip():
         print(f"\n检测到代码长度: {len(code)} 字符")
-        result = process_single_patch(code)
-        print(f"\n结果:\n{result}")
+        result = static_analyze(code)
+        print(f"\n分析结果:\n{result}")
     else:
         print("未输入任何代码")
 
@@ -126,13 +122,12 @@ def input_files_mode():
                 break
 
         if all_ok and contents:
-            # 逐个文件处理
             for i, content in enumerate(contents, 1):
                 print(f"\n{'='*50}")
-                print(f"处理第 {i} 个文件")
+                print(f"分析第 {i} 个文件")
                 print(f"{'='*50}")
-                result = process_single_patch(content)
-                print(f"\n结果:\n{result}")
+                result = static_analyze(content)
+                print(f"\n分析结果:\n{result}")
             break
 
 
