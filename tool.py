@@ -22,6 +22,9 @@ def static_analyze(code):
     # 1. 生成代码变更意图
     print("正在生成代码分析...")
     cci = generate_cci(code)
+    if not cci:
+        print("错误: 无法生成代码分析，API调用失败")
+        return None
     print(f"代码分析完成: {cci[:100]}...")
 
     # 2. 检索相似漏洞案例
@@ -30,7 +33,7 @@ def static_analyze(code):
     print(f"检索到 {vuln_description}")
 
     # 3. 构造 prompt
-    user_prompt = Template(str(USER_PROMPT_SA)).substitute(
+    user_prompt = USER_PROMPT_SA.substitute(
         code_content=code,
         rag_context=rag_context
     )
