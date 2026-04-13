@@ -214,3 +214,7 @@ leaks/
 # Claude
 .claude/
 CLAUDE.md
+
+# BUILD SCRIPT
+build.cmd
+build.log

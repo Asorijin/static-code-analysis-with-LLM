@@ -46,7 +46,7 @@ class Config:
     # ========== NVD API ==========
     NVD_API_URL = "https://services.nvd.nist.gov/rest/json/cves/2.0"
     NVD_API_LIMIT = 10
-    NVD_API_DELAY = 1  # 秒，NVD有访问频率限制
+    NVD_API_DELAY = 0.8  # 秒，NVD有访问频率限制
 
     # ========== 路径配置 ==========
     PROJECT_ROOT = Path(__file__).parent

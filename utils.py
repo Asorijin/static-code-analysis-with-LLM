@@ -59,11 +59,13 @@ def get_embeddings_qwen(texts, batch_size=1):
         batch_texts = texts[i : i + batch_size]
         if batch_texts is None:
             batch_texts = ["None"]
-        batch_texts = [(text or "").replace("\n", " ") for text in batch_texts]
+        batch_texts = [
+            ("" if (isinstance(text, float) and text != text) else (text or "")).replace("\n", " ")
+            for text in batch_texts
+        ]
         embeddings = embed(batch_texts)
         embedding_results.append(embeddings)
     return embedding_results
-
 
 def inference_llm(system_prompt, user_prompt, cache_dir=None):
     """与LLM交互"""
