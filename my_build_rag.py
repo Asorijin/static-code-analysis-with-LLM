@@ -102,8 +102,8 @@ df.to_parquet('without_embedding_leak_tmp.parquet')
 
 df['cve_info'] = df.apply(cve_process, axis=1)
 
-# # 到这一步是完成了原始历史漏洞信息收集
-# df.to_parquet('without_embedding_leak_new.parquet')
+# 到这一步是完成了原始历史漏洞信息收集
+df.to_parquet('without_embedding_leak_new.parquet')
 
 # 将三方面意见作为向量嵌入
 df = parallel_apply_thread(df, embed_process, "3aspect_embedding", max_workers=2)
